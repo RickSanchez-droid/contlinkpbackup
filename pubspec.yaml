@@ -41,8 +41,8 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # Cross-platform Bluetooth packages
-  flutter_blue_plus: ^1.34.5  # Update to latest version
-  permission_handler: ^11.3.1  # Update to latest version
+  flutter_blue_plus: ^1.35.1  # Update to latest version
+  permission_handler: ^12.0.0  # Update to latest version
   package_info_plus: ^5.0.1    # Keep this version for now
 
 dev_dependencies:
