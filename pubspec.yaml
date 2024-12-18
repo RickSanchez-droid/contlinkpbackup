@@ -42,7 +42,7 @@ dependencies:
 
   # Cross-platform Bluetooth packages
   flutter_blue_plus: ^1.35.1  # Update to latest version
-  permission_handler: ^12.0.0  # Update to latest version
+  permission_handler: ^11.0.0  # Update to a known version
   package_info_plus: ^5.0.1    # Keep this version for now
 
 dev_dependencies:
