@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Add these near the top -->
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+    
+    <!-- Add this near the top of the dict -->
+    <key>CFBundleIdentifier</key>
+    <string>com.dd.contlink</string>
+    
+    <!-- Existing entries -->
+    
+    <!-- Add Bluetooth permissions -->
+    <key>NSBluetoothAlwaysUsageDescription</key>
+    <string>ContLink needs Bluetooth access to scan for and connect to nearby game controllers</string>
+    
+    <!-- Add Game Controller framework capabilities -->
+    <key>UISupportedExternalAccessoryProtocols</key>
+    <array>
+        <string>com.apple.gamecontroller</string>
+    </array>
+    
+    <!-- Add these inside the <dict> tag -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>bluetooth-central</string>
+        <string>bluetooth-peripheral</string>
+    </array>
+    
+    <key>CFBundleExecutable</key>
+    <string>Runner</string>
+    <key>CFBundleName</key>
+    <string>ContLink</string>
+	<key>CFBundleDisplayName</key>
+	<string>contlink</string>
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <false/>
+</dict>
+</plist> 

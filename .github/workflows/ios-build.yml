@@ -1,0 +1,89 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Select Xcode version
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '15.0'
+    
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.19.0'
+        channel: 'stable'
+        cache: true
+    
+    - name: Install Flutter dependencies
+      run: flutter pub get
+      
+    - name: Clean iOS build thoroughly
+      run: |
+          rm -rf ios
+          flutter create --platforms=ios --org com.dd .
+        
+    - name: Update bundle identifier
+      run: |
+          sed -i '' 's/com.dd.contlinkp/com.dd.contlink/g' ios/Runner.xcodeproj/project.pbxproj
+        
+    - name: Install CocoaPods
+      run: |
+        sudo gem install cocoapods
+        if [ $? -ne 0 ]; then
+          echo "Error: CocoaPods installation failed!"
+          exit 1
+        fi
+        
+    - name: Install CocoaPods dependencies
+      run: |
+        cd ios
+        echo "Running pod install..."
+        pod install
+        if [ $? -ne 0 ]; then
+            echo "Error: pod install failed!"
+            exit 1
+        fi
+        cd ..
+        echo "Pod install completed successfully."
+        
+    - name: Build iOS
+      run: |
+          echo "Building iOS app..."
+          flutter build ios --release --no-codesign
+          if [ $? -ne 0 ]; then
+              echo "Error: iOS build failed!"
+              exit 1
+          fi
+          echo "iOS build completed successfully."
+
+    - name: Create IPA
+      working-directory: build/ios/iphoneos
+      run: |
+        mkdir -p Payload
+        cp -r Runner.app Payload/
+        if [ ! -f "Payload/Runner.app/Runner" ]; then
+          echo "Error: Runner executable not found!"
+          exit 1
+        fi
+        chmod +x Payload/Runner.app/Runner
+        zip -qr app.ipa Payload
+        unzip -l app.ipa
+
+    
+    - name: Upload IPA
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build
+        path: build/ios/iphoneos/app.ipa
+        retention-days: 90
