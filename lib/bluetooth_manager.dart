@@ -25,7 +25,12 @@ class BluetoothManager {
         Permission.location,
       ].request();
     } else if (Platform.isIOS) {
-      await Permission.bluetoothAlways.request();
+      var status = await Permission.bluetooth.status;
+      if (status.isDenied) {
+        _connectionStatusController.add('Bluetooth permission has been denied.');
+      } else {
+        await Permission.bluetooth.request();
+      }
     }
 
     // Initialize FlutterBluePlus
@@ -40,6 +45,12 @@ class BluetoothManager {
   }
 
   Future<void> connectToController() async {
+    var status = await Permission.bluetooth.status;
+    if (status.isDenied) {
+      _connectionStatusController.add('Bluetooth permission has been denied.');
+      return;
+    }
+    
     try {
       _connectionStatusController.add('Scanning...');
       
