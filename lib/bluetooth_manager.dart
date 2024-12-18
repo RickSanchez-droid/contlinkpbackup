@@ -25,7 +25,7 @@ class BluetoothManager {
         Permission.location,
       ].request();
     } else if (Platform.isIOS) {
-      await Permission.bluetooth.request();
+      await Permission.bluetoothAlways.request();
     }
 
     // Initialize FlutterBluePlus
