@@ -11,11 +11,12 @@ class BluetoothManager {
   final StreamController<String> _connectionStatusController = StreamController<String>.broadcast();
   Map<String, String> _inputMappings = {};
   VirtualGameController? _virtualController;
+  bool _isBluetoothInitialized = false;
 
   Stream<String> get connectionStatus => _connectionStatusController.stream;
   Map<String, String> get inputMappings => _inputMappings;
 
-  Future<void> initialize() async {
+  Future<void> _initializeBluetooth() async {
     // Request permissions
     if (Platform.isAndroid) {
       await [
@@ -42,9 +43,18 @@ class BluetoothManager {
 
     // Load saved mappings
     await loadSavedMappings();
+    _isBluetoothInitialized = true;
+  }
+
+  Future<void> initialize() async {
+    // Do nothing on app launch, wait for user input
   }
 
   Future<void> connectToController() async {
+    if (!_isBluetoothInitialized) {
+      await _initializeBluetooth();
+    }
+
     var status = await Permission.bluetooth.status;
     if (status.isDenied) {
       _connectionStatusController.add('Bluetooth permission has been denied.');
