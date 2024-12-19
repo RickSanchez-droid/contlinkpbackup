@@ -12,6 +12,8 @@ class BluetoothManager {
   Map<String, String> _inputMappings = {};
   VirtualGameController? _virtualController;
   bool _isBluetoothInitialized = false;
+  bool _bluetoothPermissionGranted = false;
+  StreamSubscription<PermissionStatus>? _permissionSubscription;
 
   Stream<String> get connectionStatus => _connectionStatusController.stream;
   Map<String, String> get inputMappings => _inputMappings;
@@ -27,6 +29,7 @@ class BluetoothManager {
       ].request();
     } else if (Platform.isIOS) {
       var status = await Permission.bluetooth.status;
+      _bluetoothPermissionGranted = status.isGranted;
       if (status.isDenied) {
         _connectionStatusController.add('Bluetooth permission has been denied.');
       } else {
@@ -47,7 +50,23 @@ class BluetoothManager {
   }
 
   Future<void> initialize() async {
-    // Do nothing on app launch, wait for user input
+    // Load saved permission status
+    await loadSavedMappings();
+    if (_bluetoothPermissionGranted) {
+      _connectionStatusController.add('Bluetooth permission was previously granted.');
+    } else {
+      _connectionStatusController.add('Bluetooth permission was previously denied.');
+    }
+    
+    _permissionSubscription = Permission.bluetooth.onStatusChanged.listen((status) {
+      _bluetoothPermissionGranted = status.isGranted;
+      if (status.isDenied) {
+        _connectionStatusController.add('Bluetooth permission has been denied.');
+      } else {
+        _connectionStatusController.add('Bluetooth permission was granted.');
+      }
+      saveInputMappingToJson();
+    });
   }
 
   Future<void> connectToController() async {
@@ -55,8 +74,7 @@ class BluetoothManager {
       await _initializeBluetooth();
     }
 
-    var status = await Permission.bluetooth.status;
-    if (status.isDenied) {
+    if (!_bluetoothPermissionGranted) {
       _connectionStatusController.add('Bluetooth permission has been denied.');
       return;
     }
@@ -191,6 +209,7 @@ class BluetoothManager {
         String contents = await file.readAsString();
         Map<String, dynamic> jsonMap = json.decode(contents);
         _inputMappings = Map<String, String>.from(jsonMap);
+        _bluetoothPermissionGranted = jsonMap['bluetoothPermissionGranted'] ?? false;
       }
     } catch (e) {
       print('Error loading mappings: $e');
@@ -200,7 +219,8 @@ class BluetoothManager {
   Future<void> saveInputMappingToJson() async {
     try {
       final file = File('config/input_mapping.json');
-      await file.writeAsString(json.encode(_inputMappings));
+      final jsonMap = {..._inputMappings, 'bluetoothPermissionGranted': _bluetoothPermissionGranted};
+      await file.writeAsString(json.encode(jsonMap));
     } catch (e) {
       print('Error saving mappings: $e');
     }
@@ -209,5 +229,6 @@ class BluetoothManager {
   void dispose() {
     _connectionStatusController.close();
     _virtualController?.dispose();
+    _permissionSubscription?.cancel();
   }
 }
