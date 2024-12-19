@@ -57,16 +57,6 @@ class BluetoothManager {
     } else {
       _connectionStatusController.add('Bluetooth permission was previously denied.');
     }
-    
-    _permissionSubscription = Permission.bluetooth.onStatusChanged.listen((status) {
-      _bluetoothPermissionGranted = status.isGranted;
-      if (status.isDenied) {
-        _connectionStatusController.add('Bluetooth permission has been denied.');
-      } else {
-        _connectionStatusController.add('Bluetooth permission was granted.');
-      }
-      saveInputMappingToJson();
-    });
   }
 
   Future<void> connectToController() async {
@@ -74,7 +64,9 @@ class BluetoothManager {
       await _initializeBluetooth();
     }
 
-    if (!_bluetoothPermissionGranted) {
+    var status = await Permission.bluetooth.status;
+    _bluetoothPermissionGranted = status.isGranted;
+    if (status.isDenied) {
       _connectionStatusController.add('Bluetooth permission has been denied.');
       return;
     }
